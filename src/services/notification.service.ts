@@ -5,12 +5,13 @@ export class NotificationService {
 
   constructor(private permissionServiceClient: PermissionServiceClient) {}
 
-  async confirmNotification(userId: string, notificationId: string): Promise<void> {
-    console.log(`Checking permission for userId=${userId} on notificationId=${notificationId}`);
+  async confirmNotification(userId: string, notificationId: string, tenantId?: string): Promise<void> {
+    console.log(`Checking permission for userId=${userId} on notificationId=${notificationId} for tenant=${tenantId}`);
     const hasPermission = await this.permissionServiceClient.hasPermission(
       userId,
       Domain.NOTIFICATION,
-      Action.UPDATE
+      Action.UPDATE,
+      tenantId
     );
 
     if (!hasPermission) {
