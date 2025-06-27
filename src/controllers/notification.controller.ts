@@ -11,10 +11,17 @@ export class NotificationController {
   async confirmNotification(req: Request, res: Response): Promise<void> {
     try {
       const userId = this.identityProvider.getUserId(req);
-      console.log(`[NotificationController] confirmNotification called by userId: ${userId}`);
+      const tenantId = this.identityProvider.getTenantId(req);
+      console.log(`[NotificationController] confirmNotification called by userId: ${userId}, tenantId: ${tenantId}`);
+      
       if (!userId) {
         console.warn('[NotificationController] User ID not found in request');
         res.status(401).json({ error: 'User ID not found' });
+        return;
+      }
+      if (!tenantId) {
+        console.warn('[NotificationController] Tenant ID not found in request');
+        res.status(401).json({ error: 'Tenant ID not found' });
         return;
       }
 
@@ -26,8 +33,8 @@ export class NotificationController {
         return;
       }
 
-      await this.notificationService.confirmNotification(userId, notificationId);
-      console.log(`[NotificationController] Notification ${notificationId} confirmed for user ${userId}`);
+      await this.notificationService.confirmNotification(userId, tenantId, notificationId);
+      console.log(`[NotificationController] Notification ${notificationId} confirmed for user ${userId} in tenant ${tenantId}`);
       res.status(200).json({ message: 'Notification confirmed successfully' });
     } catch (error) {
       if (error instanceof Error && error.message === 'Insufficient permissions') {

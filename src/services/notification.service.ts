@@ -5,20 +5,21 @@ export class NotificationService {
 
   constructor(private permissionServiceClient: PermissionServiceClient) {}
 
-  async confirmNotification(userId: string, notificationId: string): Promise<void> {
-    console.log(`Checking permission for userId=${userId} on notificationId=${notificationId}`);
+  async confirmNotification(userId: string, tenantId: string, notificationId: string): Promise<void> {
+    console.log(`Checking permission for userId=${userId}, tenantId=${tenantId} on notificationId=${notificationId}`);
     const hasPermission = await this.permissionServiceClient.hasPermission(
       userId,
+      tenantId,
       Domain.NOTIFICATION,
       Action.UPDATE
     );
 
     if (!hasPermission) {
-      console.log(`Permission denied for userId=${userId} on notificationId=${notificationId}`);
+      console.log(`Permission denied for userId=${userId}, tenantId=${tenantId} on notificationId=${notificationId}`);
       throw new Error('Insufficient permissions');
     }
 
-    console.log(`Confirming notificationId=${notificationId} for userId=${userId}`);
+    console.log(`Confirming notificationId=${notificationId} for userId=${userId} in tenant ${tenantId}`);
     this.confirmedNotifications.add(notificationId);
   }
 
