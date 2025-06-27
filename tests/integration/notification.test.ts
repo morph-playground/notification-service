@@ -21,13 +21,15 @@ describe('Notification Integration Tests', () => {
   describe('POST /notifications/:notificationId/confirm', () => {
     it('should confirm notification when user has permission', async () => {
       const userId = 'user123';
+      const tenantId = 'tenant456';
       const notificationId = 'notification456';
 
       // Mock permission service response
       nock(permissionServiceBaseUrl)
-        .get('/permissions/check')
+        .get('/permissions/v2/check')
         .query({
           subjectId: userId,
+          tenantId: tenantId,
           domain: 'NOTIFICATION',
           action: 'UPDATE'
         })
@@ -35,7 +37,8 @@ describe('Notification Integration Tests', () => {
 
       const response = await request(app)
         .post(`/notifications/${notificationId}/confirm`)
-        .set('identity-user-id', userId);
+        .set('identity-user-id', userId)
+        .set('identity-tenant-id', tenantId);
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ message: 'Notification confirmed successfully' });
@@ -43,13 +46,15 @@ describe('Notification Integration Tests', () => {
 
     it('should return 403 when user lacks permission', async () => {
       const userId = 'user123';
+      const tenantId = 'tenant456';
       const notificationId = 'notification456';
 
       // Mock permission service response
       nock(permissionServiceBaseUrl)
-        .get('/permissions/check')
+        .get('/permissions/v2/check')
         .query({
           subjectId: userId,
+          tenantId: tenantId,
           domain: 'NOTIFICATION',
           action: 'UPDATE'
         })
@@ -57,7 +62,8 @@ describe('Notification Integration Tests', () => {
 
       const response = await request(app)
         .post(`/notifications/${notificationId}/confirm`)
-        .set('identity-user-id', userId);
+        .set('identity-user-id', userId)
+        .set('identity-tenant-id', tenantId);
 
       expect(response.status).toBe(403);
       expect(response.body).toEqual({ error: 'Insufficient permissions' });
@@ -73,15 +79,29 @@ describe('Notification Integration Tests', () => {
       expect(response.body).toEqual({ error: 'User ID not found' });
     });
 
-    it('should return 500 when permission service is unavailable', async () => {
+    it('should return 401 when tenant ID is missing', async () => {
       const userId = 'user123';
+      const notificationId = 'notification456';
+
+      const response = await request(app)
+        .post(`/notifications/${notificationId}/confirm`)
+        .set('identity-user-id', userId);
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ error: 'Tenant ID not found' });
+    });
+
+    it('should return 403 when permission service is unavailable', async () => {
+      const userId = 'user123';
+      const tenantId = 'tenant456';
       const notificationId = 'notification456';
 
       // Mock permission service error
       nock(permissionServiceBaseUrl)
-        .get('/permissions/check')
+        .get('/permissions/v2/check')
         .query({
           subjectId: userId,
+          tenantId: tenantId,
           domain: 'NOTIFICATION',
           action: 'UPDATE'
         })
@@ -89,7 +109,8 @@ describe('Notification Integration Tests', () => {
 
       const response = await request(app)
         .post(`/notifications/${notificationId}/confirm`)
-        .set('identity-user-id', userId);
+        .set('identity-user-id', userId)
+        .set('identity-tenant-id', tenantId);
 
       expect(response.status).toBe(403);
       expect(response.body).toEqual({ error: 'Insufficient permissions' });

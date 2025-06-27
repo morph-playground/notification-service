@@ -7,4 +7,11 @@ export class IdentityProvider {
     console.log(`[IdentityProvider] Extracted userId: ${userId}`);
     return userId || null;
   }
+
+  getTenantId(req: Request): string | null {
+    console.log(`[IdentityProvider] Received headers: ${JSON.stringify(req.headers)}`);
+    const tenantId = req.header('identity-tenant-id');
+    console.log(`[IdentityProvider] Extracted tenantId: ${tenantId}`);
+    return tenantId || null;
+  }
 }
