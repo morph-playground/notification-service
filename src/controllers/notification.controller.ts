@@ -26,7 +26,8 @@ export class NotificationController {
         return;
       }
 
-      await this.notificationService.confirmNotification(userId, notificationId);
+      const tenantId = this.identityProvider.getTenantId(req);
+      await this.notificationService.confirmNotification(userId, notificationId, tenantId);
       console.log(`[NotificationController] Notification ${notificationId} confirmed for user ${userId}`);
       res.status(200).json({ message: 'Notification confirmed successfully' });
     } catch (error) {
